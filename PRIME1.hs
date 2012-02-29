@@ -1,4 +1,6 @@
 import Data.Array
+import Data.Maybe
+import qualified Data.ByteString.Lazy.Char8 as BS
 
 isprime n = n > 1 && foldr f True primes
     where f i state = i*i > n || n `mod` i /= 0 && state
@@ -22,13 +24,15 @@ minus (x:xs) (y:ys) = case (compare x y) of
                            GT -> minus (x:xs) ys
 minus xs _ = xs
 
+readInt = fst . fromJust . BS.readInt
+
+solve :: BS.ByteString -> BS.ByteString
+solve input = let [m,n] = map readInt $ BS.words input
+                  in BS.unlines $ map (BS.pack . show) $ primesBetween m n
+
 main = do
     input <- getLine
     let testcount = read input
     sequence . take testcount . repeat $ do
         input <- getLine
-        let [m,n] = map read $ words input
-        if n < 100000
-            then mapM_ print (dropWhile (<m) $ takeWhile (<=n) primes)
-            else mapM_ print (primesBetween m n)
-        putStrLn ""
+        BS.putStrLn $ solve $ BS.pack input
