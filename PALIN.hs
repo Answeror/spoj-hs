@@ -1,6 +1,12 @@
--- SPOJ PALIN
+-- |SPOJ PALIN
 -- To find the next palindrome number large than K. K is not more than 10^6
--- digits.
+-- digits. 
+-- Note:
+-- 1. use ByteString
+-- 2. not use Integer
+-- 3. write inc manually
+-- The third point is the most important. Do not use carried arithmetic,
+-- instead, find the last number which is not '9'.
 
 import Data.Char
 import Data.Maybe
@@ -18,13 +24,14 @@ solve ns = if (BS.reverse hs) > ls then make hs
                      then (BS.take half ns, BS.drop half ns)
                      else (BS.take (half+1) ns, BS.drop half ns)
         half = (BS.length ns) `div` 2
-        make s = s `BS.append` (BS.drop (BS.length s-half) (BS.reverse s))
+        make s = s ~~ (BS.drop (BS.length s-half) (BS.reverse s))
 
 inc :: BS.ByteString -> BS.ByteString
-inc = BS.pack . fst . foldr f ([],1) . BS.unpack
-    where f ch (s,c) = let x = ord ch - 48 + c
-                           r = x `mod` 10
-                           q = x `div` 10
-                           in (chr (r + 48):s,q)
-          g (s,c) = if c == 0 then s
-                              else chr (c + 48):s
+inc = f . BS.spanEnd (=='9')
+    where f (high,low) = let high' = if BS.null high
+                                        then BS.pack "1"
+                                        else BS.snoc (BS.init high)
+                                             (chr (1 + ord (BS.last high)))
+                            in high' ~~ (BS.replicate (BS.length low) '0')
+
+(~~) = BS.append
